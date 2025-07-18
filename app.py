@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOllama
 from langchain.memory import ConversationBufferMemory
@@ -25,16 +26,22 @@ if "memory" not in st.session_state or st.session_state.get("prev_context_size")
 llm = ChatOllama(model=MODEL, streaming=True)
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
-pdf_files = file_path=r"C:\\Users\\admin\\RAG-Chatbot\\pdf_files"
+pdf_files_path = "C:/Users/admin/RAG-Chatbot/pdf_files/"
 
-def PDFLoader(pdf_files):
+print("Loading data...")
+print(os.listdir(pdf_files_path))
+
+loaders = [PyPDFLoader(os.path.join(pdf_files_path, fn)) for fn in os.listdir(pdf_files_path)]
+print(loaders)
+
+def PDFLoader():
     docs = []
-    for pdf_file in pdf_files:
-        loader = PyPDFLoader(file_path=pdf_file)
-        docs.extend(loader.load())
+    for loader in loaders:
+        print("Loading raw document..." + loader.file_path)
+        docs = loader.load()
     return docs
 
-all_pdfs = PDFLoader(pdf_files)
+all_pdfs = PDFLoader()
 
 llm = ChatOllama(model="deepseek-coder:6.7b" )
 
@@ -48,7 +55,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 splited_documents = text_splitter.split_documents(all_pdfs)
 print(splited_documents)
 
-persist_directory = "./chroma_db"
+persist_directory = "./chromadb"
 
 vectorstore = Chroma.from_documents(
     documents=splited_documents,
