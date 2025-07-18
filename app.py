@@ -26,7 +26,7 @@ if "memory" not in st.session_state or st.session_state.get("prev_context_size")
 llm = ChatOllama(model=MODEL, streaming=True)
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
-pdf_files_path = "C:/Users/admin/RAG-Chatbot/pdf_files/"
+pdf_files_path = "C:/Users/admin/RAG-Chatbot/files/"
 
 print("Loading data...")
 print(os.listdir(pdf_files_path))
