@@ -1,9 +1,10 @@
 import streamlit as st
 import os
+import chromadb
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOllama
 from langchain.memory import ConversationBufferMemory
-from langchain_ollama.embeddings import OllamaEmbeddings
+from langchain.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -26,22 +27,17 @@ if "memory" not in st.session_state or st.session_state.get("prev_context_size")
 llm = ChatOllama(model=MODEL, streaming=True)
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
-pdf_files_path = "C:/Users/admin/RAG-Chatbot/files/"
+pdf_files_path = "/Users/rou/RAG-Chatbot/files/"
 
-print("Loading data...")
-print(os.listdir(pdf_files_path))
-
-loaders = [PyPDFLoader(os.path.join(pdf_files_path, fn)) for fn in os.listdir(pdf_files_path)]
-print(loaders)
-
-def PDFLoader():
+def PDFLoader(pdf_dir):
     docs = []
-    for loader in loaders:
-        print("Loading raw document..." + loader.file_path)
-        docs = loader.load()
+    for filename in os.listdir(pdf_dir):
+        if filename.endswith(".pdf"):
+            loader = PyPDFLoader(os.path.join(pdf_dir, filename))
+            docs.extend(loader.load())
     return docs
 
-all_pdfs = PDFLoader()
+all_pdfs = PDFLoader(pdf_files_path)
 
 llm = ChatOllama(model="deepseek-coder:6.7b" )
 
