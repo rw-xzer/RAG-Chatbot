@@ -84,10 +84,10 @@ if prompt := st.chat_input("Ask something"):
     with st.chat_message("assistant"):
         response_container = st.empty()
 
-        retrieve_docs = retriever.get_relevant_documents(prompt)
+        retrieve_docs = retriever.invoke(prompt)
         response = (
             "No relevant documents found." if not retrieve_docs
-            else qa({"query": prompt}).get("result", "No response generated.")
+            else qa.invoke({"query": prompt}).get("result", "No response generated.")
         )
 
         response_container.markdown(response)
