@@ -19,7 +19,8 @@ load_dotenv()
 st.set_page_config(layout="wide")
 st.title("RAG Chatbot")
 
-MODEL = "deepseek-coder"
+#deepseek-r1:7b
+MODEL = "deepseek-r1:1.5b"
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -71,11 +72,12 @@ def trim_memory():
     while len(st.session_state.chat_history) > 10 * 2:
         st.session_state.chat_history.pop(0)
 
-custom_prompt_template = """You are a helpful assistant. Use the following pieces of context to answer the question at the end. If you don't know, say you don't know.
-
-{context}
-
+custom_prompt_template = """
+Answer the question only based on the following context if it is relevant to the question.
+Context: {context}
 Question: {question}
+If the context is not relevant to the question, answer based on your own knowledge.
+Always be truthful and clear. If you don't know the answer, say that you don't know and do not fabricate an answer.
 Helpful Answer:"""
 
 prompt_template = PromptTemplate(
@@ -91,20 +93,25 @@ qa = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": prompt_template}
 )
 
-if user_input := st.chat_input("Ask something"):
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+for msg in st.session_state.chat_history:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
+if user_input := st.chat_input("Ask something"):
     with st.chat_message("user"):
         st.markdown(user_input)
-
-    trim_memory()
-
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    
     with st.chat_message("assistant"):
-        response_container = st.empty()
+        response_placeholder = st.empty()
+        
+        response_placeholder.markdown("Thinking...")
+        
         try:
             print("Prompt received:", user_input)
             retrieve_docs = retriever.invoke(user_input)
             print("Documents retrieved:", retrieve_docs)
+            
             if not retrieve_docs:
                 response = "No relevant documents found."
             else:
@@ -112,17 +119,16 @@ if user_input := st.chat_input("Ask something"):
                 qa_result = qa.invoke({"query": user_input})
                 print("QA chain result:", qa_result)
                 response = qa_result.get("result", "No response generated.")
+            
             print("Response:", response)
-
-            response_container.markdown(response)
+            
+            response_placeholder.markdown(response)
+            
             st.session_state.chat_history.append({"role": "assistant", "content": response})
-
             trim_memory()
-
+            
         except Exception as e:
             print("Error during response generation:", e)
-            response_container.markdown(f"**Error:** {e}")
-
-for msg in st.session_state.chat_history:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+            error_response = f"**Error:** {e}"
+            response_placeholder.markdown(error_response)
+            st.session_state.chat_history.append({"role": "assistant", "content": error_response})
