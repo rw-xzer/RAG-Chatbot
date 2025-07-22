@@ -77,7 +77,7 @@ Answer the question only based on the following context if it is relevant to the
 Context: {context}
 Question: {question}
 If the context is not relevant to the question, answer based on your own knowledge.
-Always be truthful and clear. If the context doesn't have relevant information, provide a helpful answer based on your knowledge.
+Always be truthful and clear. Only provide andswers from the datanse
 If you are unsure, just say "I don't have enough information to answer that."
 If you don't know the answer, just say "I don't have enough information to answer that."
 Helpful Answer:"""
