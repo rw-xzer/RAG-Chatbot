@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import chromadb
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain.memory import ConversationBufferMemory
 from langchain.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -11,6 +11,7 @@ from langchain_community.document_loaders.blob_loaders import FileSystemBlobLoad
 from langchain_community.document_loaders.parsers.pdf import PyPDFParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
+from langchain.retrievers import MultiQueryRetriever
 
 from dotenv import load_dotenv
 
@@ -28,7 +29,7 @@ if "memory" not in st.session_state or st.session_state.get("prev_context_size")
     st.session_state.memory = ConversationBufferMemory(return_messages=True)
     st.session_state.prev_context_size = 16384
 
-llm = ChatOllama(model=MODEL, streaming=True)
+llm = ChatOllama(model=MODEL, streaming=True, temperature=0.4)
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
 pdf_files_path = "/Users/rou/RAG-Chatbot/files/"
@@ -66,7 +67,19 @@ vectorstore = Chroma.from_documents(
 vectorstore.persist()
 print("Data stored in Chromadb")
 
-retriever = vectorstore.as_retriever(search_type="similarity")
+QUERY_PROMPT = PromptTemplate(
+    input_variables=["question"],
+    template="""You are an AI language model assistant. Your task is to generate 3
+    different versions of the given user question to retrieve relevant documents from
+    a vector database. By generating multiple perspectives on the user question, your
+    goal is to help the user overcome some of the limitations of the distance-based
+    similarity search. Provide these alternative questions separated by newlines.
+    Original question: {question}""",
+)
+
+retriever = MultiQueryRetriever.from_llm(
+    vectorstore.as_retriever(), llm, prompt=QUERY_PROMPT
+)
 
 def trim_memory():
     while len(st.session_state.chat_history) > 10 * 2:
@@ -76,14 +89,15 @@ custom_prompt_template = """
 Answer the question only based on the following context if it is relevant to the question.
 Context: {context}
 Question: {question}
-If the context is not relevant to the question, answer based on your own knowledge.
-Always be truthful and clear. Only provide andswers from the datanse
+If the context does not answer the question and the question is a general system question, answer based on your own knowledge.
+Always be truthful and clear.
 If you are unsure, just say "I don't have enough information to answer that."
 If you don't know the answer, just say "I don't have enough information to answer that."
+Always state your sources.
 Helpful Answer:"""
 
 prompt_template = PromptTemplate(
-    input_variables=["context", "question"],
+    input_variables=[{"context": retriever}, "question"],
     template=custom_prompt_template,
 )
 
