@@ -12,10 +12,16 @@ from langchain_community.document_loaders.parsers.pdf import PyPDFParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
 from langchain.retrievers import MultiQueryRetriever
+from chromadb.config import Settings
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+client = chromadb.PersistentClient(path="/Users/rou/RAG-Chatbot/chromadb")
+collection = client.get_or_create_collection(name="chroma.sqlite3")
+
+collection.delete(where={"source": "chromadb"})
 
 st.set_page_config(layout="wide")
 st.title("RAG Chatbot")
@@ -29,7 +35,7 @@ if "memory" not in st.session_state or st.session_state.get("prev_context_size")
     st.session_state.memory = ConversationBufferMemory(return_messages=True)
     st.session_state.prev_context_size = 16384
 
-llm = ChatOllama(model=MODEL, streaming=True, temperature=0.4)
+llm = ChatOllama(model=MODEL, streaming=True, temperature=0.6)
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
 pdf_files_path = "/Users/rou/RAG-Chatbot/files/"
@@ -47,8 +53,8 @@ def PDFLoader(pdf_dir):
 all_pdfs = PDFLoader(pdf_files_path)
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=100,
+    chunk_size=1500,
+    chunk_overlap=850,
     length_function=len,
     is_separator_regex=False,
 )
@@ -86,18 +92,17 @@ def trim_memory():
         st.session_state.chat_history.pop(0)
 
 custom_prompt_template = """
-Answer the question only based on the following context if it is relevant to the question.
+Answer the question only with the following context. 
 Context: {context}
 Question: {question}
-If the context does not answer the question and the question is a general system question, answer based on your own knowledge.
-Always be truthful and clear.
+If the context does not answer the question, just say "I don't have enough information to answer that."
 If you are unsure, just say "I don't have enough information to answer that."
-If you don't know the answer, just say "I don't have enough information to answer that."
-Always state your sources.
-Helpful Answer:"""
+Always be truthful and clear while using simple language.
+When possible always directly use the relevant part of the context to answer the question.
+"""
 
 prompt_template = PromptTemplate(
-    input_variables=[{"context": retriever}, "question"],
+    input_variables=["context", "question"],
     template=custom_prompt_template,
 )
 
