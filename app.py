@@ -54,7 +54,7 @@ all_pdfs = PDFLoader(pdf_files_path)
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1500,
-    chunk_overlap=850,
+    chunk_overlap=950,
     length_function=len,
     is_separator_regex=False,
 )
@@ -79,7 +79,7 @@ QUERY_PROMPT = PromptTemplate(
     different versions of the given user question to retrieve relevant documents from
     a vector database. By generating multiple perspectives on the user question, your
     goal is to help the user overcome some of the limitations of the distance-based
-    similarity search. Provide these alternative questions separated by newlines.
+    similarity search. Provide these alternative questions separated by new lines.
     Original question: {question}""",
 )
 
@@ -97,8 +97,10 @@ Context: {context}
 Question: {question}
 If the context does not answer the question, just say "I don't have enough information to answer that."
 If you are unsure, just say "I don't have enough information to answer that."
-Always be truthful and clear while using simple language.
 When possible always directly use the relevant part of the context to answer the question.
+Figures refer to images which should be explained in words when referred to.
+Assume that all grammar and spelling mistakes in the context are intentional and should not be corrected.
+Always be truthful and clear while using simple language.
 """
 
 prompt_template = PromptTemplate(
