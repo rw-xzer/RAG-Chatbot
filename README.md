@@ -21,9 +21,7 @@ This chatbot loads PDFs from a local folder, breaks them into text chunks, embed
 ```
 
 rag-chatbot/
-├── main.py                  # Streamlit app UI
-├── loader.py                # Loads and processes PDF files
-├── rag\_chain.py             # Sets up vectorstore and QA chain
+├── app.py                  # Streamlit app UI, vectorstore and QA chain, loads and processes PDF files
 ├── data/                    # Folder containing PDF documents
 ├── chroma\_db/               # Local ChromaDB vectorstore
 ├── requirements.txt         # Python dependencies
@@ -69,7 +67,7 @@ ollama pull deepseek
 Make sure Ollama is running, then start the Streamlit app:
 
 ```bash
-streamlit run main.py
+streamlit run app.py
 ```
 
 The app will load PDFs from the `data/` folder and use them to answer your questions.
