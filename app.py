@@ -26,8 +26,7 @@ collection.delete(where={"source": "chromadb"})
 st.set_page_config(layout="wide")
 st.title("RAG Chatbot")
 
-#deepseek-r1:7b
-MODEL = "deepseek-r1:1.5b"
+MODEL = "deepseek-r1:1.7b"
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
