@@ -3,7 +3,7 @@
 A Retrieval-Augmented Generation (RAG) chatbot that answers questions based on PDF documents. Built using:
 
 - **LangChain** for document processing and chaining
-- **Ollama (Deepseek)** as the local LLM
+- **Ollama (Deepseek-r1)** as the local LLM
 - **ChromaDB** for storing embeddings
 - **Streamlit** for the web interface
 - **PDF parsing** via LangChain’s document loaders
@@ -42,7 +42,7 @@ rag-chatbot/
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/rag-chatbot.git
+git clone https://github.com/rw-xzer/rag-chatbot.git
 cd rag-chatbot
 ````
 
@@ -70,7 +70,7 @@ Make sure Ollama is running, then start the Streamlit app:
 streamlit run app.py
 ```
 
-The app will load PDFs from the `data/` folder and use them to answer your questions.
+The app will load PDFs from the `files/` folder and use them to answer your questions.
 
 ---
 
