@@ -22,8 +22,8 @@ This chatbot loads PDFs from a local folder, breaks them into text chunks, embed
 
 rag-chatbot/
 ├── app.py                  # Streamlit app UI, vectorstore and QA chain, loads and processes PDF files
-├── data/                    # Folder containing PDF documents
-├── chroma\_db/               # Local ChromaDB vectorstore
+├── files/                    # Folder containing PDF documents
+├── chromadb/               # Local ChromaDB vectorstore
 ├── requirements.txt         # Python dependencies
 └── README.md                # Project documentation
 
